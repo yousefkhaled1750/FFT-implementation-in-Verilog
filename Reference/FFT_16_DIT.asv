@@ -1,0 +1,44 @@
+% implement 16-pt DIT FFT used as a golden reference for a verilog
+% implementation
+% matlab script used to generate text files of input and outputs of fft to
+% use them in testbench
+
+clear all; clc;
+%% parameters
+int_bits = 8;   %number of bits for integer part
+frac_bits = 8;  %number of bits for fractional part
+N = 16; %number of inputs
+n = (0:1:N-1);
+%% constructing input
+%construct the input from random complex number from 4:-4
+x = 8*(rand([1,N])-0.5) + 1i*8*(rand([1,N])-0.5); 
+x_real = real(x);
+x_imag = imag(x);
+%% construct the twiddle factor 
+W = exp(-1i*2*pi*n/N);
+W_real = real(W);
+W_imag = imag(W);
+
+%% perform built-in fft
+F = fft(x,N);
+F_real = real(F);
+F_imag = imag(F);
+
+%% Fixed-Point Representation Object
+q = quantizer('DataMode', 'fixed', 'Format', [int_bits+frac_bits frac_bits]);
+
+%% Fixed-Point Representation of Twiddle Factors
+twiddle_real = num2bin(q, W_real);
+twiddle_imag = num2bin(q, W_imag);
+
+%% Fixed-Point Representation of Inputs
+input_real = num2bin(q, x_real);
+input_imag = num2bin(q, x_imag);
+
+
+%% Fixed-Point Representation of Outputs
+output_real = num2bin(q, F_real);
+output_imag = num2bin(q, F_imag);
+
+
+
